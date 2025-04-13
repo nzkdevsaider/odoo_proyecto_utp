@@ -1,33 +1,6 @@
-version: '3.8'
-
 services:
-  # Reverse Proxy con SSL
-  traefik:
-    image: traefik:v2.10
-    container_name: traefik-proxy
-    command:
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.le.acme.email=admin@saider.dev"
-      - "--certificatesresolvers.le.acme.storage=/letsencrypt/acme.json"
-      - "--certificatesresolvers.le.acme.httpchallenge=true"
-      - "--certificatesresolvers.le.acme.httpchallenge.entrypoint=web"
-      - "--entrypoints.web.http.redirections.entryPoint.to=websecure"
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
-      - "./letsencrypt:/letsencrypt"
-    networks:
-      - odoo-network
-    restart: unless-stopped
-
-  # Base de datos PostgreSQL
   postgresql:
-    image: bitnami/postgresql:16
+    image: bitnami/postgresql:latest
     container_name: odoo-db
     environment:
       - POSTGRES_DB=postgres
@@ -36,17 +9,18 @@ services:
       - TZ=America/Bogota
     volumes:
       - postgres_data:/bitnami/postgresql
-      - ./postgresql/backups:/backups
+      - ./postgresql/backups:/backups # Directorio para backups
     networks:
       - odoo-network
+    ports:
+      - "5432:5432"
     restart: unless-stopped
     deploy:
       resources:
         limits:
-          cpus: '0.5'
+          cpus: "0.5"
           memory: 2G
 
-  # Servidor Odoo
   odoo:
     image: odoo:latest
     container_name: odoo-app
@@ -56,27 +30,22 @@ services:
       - HOST=postgresql
       - USER=odoo
       - PASSWORD=odoo
-      - DEFAULT_LANG=es_PA
+      - DEFAULT_LANG=es_PA # Ajusta el idioma
     volumes:
       - odoo_data:/var/lib/odoo
-      - ./odoo/addons:/mnt/extra-addons
+      - ./odoo/addons:/mnt/extra-addons # Addons personalizados
       - ./odoo/config:/etc/odoo
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.odoo.rule=Host(`odoo.saider.dev`)"
-      - "traefik.http.routers.odoo.entrypoints=websecure"
-      - "traefik.http.routers.odoo.tls.certresolver=le"
-      - "traefik.http.services.odoo.loadbalancer.server.port=8069"
     networks:
       - odoo-network
+    ports:
+      - "80:8069" # Acceso por HTTP estándar
     restart: unless-stopped
     deploy:
       resources:
         limits:
-          cpus: '1.0'
+          cpus: "1.0"
           memory: 4G
 
-# Configuración de redes y volúmenes
 volumes:
   postgres_data:
     driver: local
