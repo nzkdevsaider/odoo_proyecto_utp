@@ -69,6 +69,7 @@ services:
     environment:
       - SSL_POLICY=Mozilla-Intermediate
       - FORCE_SSL=true
+      - DEFAULT_HOST=odoo.saider.dev
   
   # LetsEncrypt
   letsencrypt:
@@ -87,6 +88,7 @@ services:
       - DEFAULT_EMAIL=sebasmoraresu@gmail.com
       - ACME_TLS=true
       - DEBUG=true
+      - NGINX_PROXY_CONTAINER=nginx-proxy
     restart: unless-stopped
 
 volumes:
