@@ -36,6 +36,7 @@ services:
       - VIRTUAL_HOST=odoo.saider.dev    
       - LETSENCRYPT_HOST=odoo.saider.dev  
       - LETSENCRYPT_EMAIL=sebasmoraresu@gmail.com
+      - ODOO_URI=/odoo
     volumes:
       - odoo_data:/var/lib/odoo
       - ./odoo/addons:/mnt/extra-addons
@@ -70,6 +71,9 @@ services:
       - SSL_POLICY=Mozilla-Intermediate
       - FORCE_SSL=true
       - DEFAULT_HOST=odoo.saider.dev
+      - VIRTUAL_PATH=/
+      - VIRTUAL_PROTO=http
+      - PROXY_REVERSE_HOST=on
   
   # LetsEncrypt
   letsencrypt:
