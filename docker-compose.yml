@@ -80,10 +80,6 @@ services:
       - PROXY_REVERSE_HOST=on
       - PROXY_READ_TIMEOUT=600
       - PROXY_BUFFERING=off
-      - PROXY_SET_HEADER Host $host
-      - PROXY_SET_HEADER X-Real-IP $remote_addr
-      - PROXY_SET_HEADER X-Forwarded-Proto $scheme
-      - PROXY_SET_HEADER X-Forwarded-For $proxy_add_x_forwarded_for
       - LETSENCRYPT_HOST=odoo.saider.dev
       - LETSENCRYPT_EMAIL=sebasmoraresu@gmail.com
 
