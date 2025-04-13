@@ -33,10 +33,13 @@ services:
       - USER=odoo
       - PASSWORD=odoo
       - DEFAULT_LANG=es_PA
-      - VIRTUAL_HOST=odoo.saider.dev    
       - LETSENCRYPT_HOST=odoo.saider.dev  
       - LETSENCRYPT_EMAIL=sebasmoraresu@gmail.com
       - ODOO_URI=/odoo
+      - VIRTUAL_HOST=odoo.saider.dev
+      - VIRTUAL_PORT=8069
+      - VIRTUAL_PROTO=http
+      - VIRTUAL_PATH=/odoo
     volumes:
       - odoo_data:/var/lib/odoo
       - ./odoo/addons:/mnt/extra-addons
@@ -64,6 +67,7 @@ services:
       - vhost:/etc/nginx/vhost.d
       - html:/usr/share/nginx/html
       - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./nginx/vhost.d:/etc/nginx/vhost.d:ro
     networks:
       - odoo-network
     restart: unless-stopped
@@ -74,6 +78,12 @@ services:
       - VIRTUAL_PATH=/
       - VIRTUAL_PROTO=http
       - PROXY_REVERSE_HOST=on
+      - PROXY_READ_TIMEOUT=600
+      - PROXY_BUFFERING=off
+      - PROXY_SET_HEADER Host $host
+      - PROXY_SET_HEADER X-Real-IP $remote_addr
+      - PROXY_SET_HEADER X-Forwarded-Proto $scheme
+      - PROXY_SET_HEADER X-Forwarded-For $proxy_add_x_forwarded_for
   
   # LetsEncrypt
   letsencrypt:
