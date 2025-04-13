@@ -44,7 +44,7 @@ services:
     networks:
       - odoo-network
     expose:
-      - "8069"          # Expone el puerto solo en la red interna
+      - "8069"         # Expone el puerto solo en la red interna
     restart: unless-stopped
     deploy:
       resources:
@@ -80,26 +80,6 @@ services:
       - PROXY_BUFFERING=off
       - LETSENCRYPT_HOST=odoo.saider.dev
       - LETSENCRYPT_EMAIL=sebasmoraresu@gmail.com
-
-  # LetsEncrypt
-  letsencrypt:
-    image: jrcs/letsencrypt-nginx-proxy-companion
-    container_name: letsencrypt
-    depends_on:
-      - nginx-proxy
-    volumes:
-      - certs:/etc/nginx/certs
-      - vhost:/etc/nginx/vhost.d
-      - html:/usr/share/nginx/html
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    networks:
-      - odoo-network
-    environment:
-      - DEFAULT_EMAIL=sebasmoraresu@gmail.com
-      - ACME_TLS=true
-      - DEBUG=true
-      - NGINX_PROXY_CONTAINER=nginx-proxy
-    restart: unless-stopped
 
 volumes:
   postgres_data:
