@@ -34,8 +34,7 @@ services:
       - PASSWORD=odoo
       - DEFAULT_LANG=es_PA
       - ODOO_URI=/
-      - VIRTUAL_HOST=odoo.saider.dev
-      - VIRTUAL_PORT=8069
+      - VIRTUAL_PORT=80
       - VIRTUAL_PROTO=http
     volumes:
       - odoo_data:/var/lib/odoo
@@ -43,8 +42,8 @@ services:
       - ./odoo/config:/etc/odoo
     networks:
       - odoo-network
-    expose:
-      - "8069"         # Expone el puerto solo en la red interna
+    ports:
+      - "80:8069"
     restart: unless-stopped
     deploy:
       resources:
@@ -52,41 +51,11 @@ services:
           cpus: "1.0"
           memory: 4G
 
-  # NGINX
-  nginx-proxy:
-    image: jwilder/nginx-proxy
-    container_name: nginx-proxy
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - certs:/etc/nginx/certs
-      - vhost:/etc/nginx/vhost.d
-      - html:/usr/share/nginx/html
-      - /var/run/docker.sock:/tmp/docker.sock:ro
-      - ./nginx/vhost.d:/etc/nginx/vhost.d:ro
-    networks:
-      - odoo-network
-    restart: unless-stopped
-    environment:
-      - SSL_POLICY=Mozilla-Intermediate
-      - FORCE_SSL=true
-      - DEFAULT_HOST=odoo.saider.dev
-      - VIRTUAL_HOST=odoo.saider.dev
-      - VIRTUAL_PATH=/
-      - VIRTUAL_PROTO=http
-      - PROXY_REVERSE_HOST=on
-      - PROXY_READ_TIMEOUT=600
-      - PROXY_BUFFERING=off
-
 volumes:
   postgres_data:
     driver: local
   odoo_data:
     driver: local
-  certs:
-  vhost:
-  html:
 
 networks:
   odoo-network:
