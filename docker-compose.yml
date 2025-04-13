@@ -1,4 +1,5 @@
 services:
+  # PostgreSQL
   postgresql:
     image: bitnami/postgresql:latest
     container_name: odoo-db
@@ -21,6 +22,7 @@ services:
           cpus: "0.5"
           memory: 2G
 
+  # Odoo
   odoo:
     image: odoo:latest
     container_name: odoo-app
@@ -30,27 +32,66 @@ services:
       - HOST=postgresql
       - USER=odoo
       - PASSWORD=odoo
-      - DEFAULT_LANG=es_PA # Ajusta el idioma
+      - DEFAULT_LANG=es_PA
+      - VIRTUAL_HOST=odoo.saider.dev    
+      - LETSENCRYPT_HOST=odoo.saider.dev  
+      - LETSENCRYPT_EMAIL=sebasmoraresu@gmail.com
     volumes:
       - odoo_data:/var/lib/odoo
-      - ./odoo/addons:/mnt/extra-addons # Addons personalizados
+      - ./odoo/addons:/mnt/extra-addons
       - ./odoo/config:/etc/odoo
     networks:
       - odoo-network
-    ports:
-      - "80:8069" # Acceso por HTTP estándar
+    expose:
+      - "8069"           # Expone el puerto solo en la red interna
     restart: unless-stopped
     deploy:
       resources:
         limits:
           cpus: "1.0"
           memory: 4G
+  
+  # NGINX
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - certs:/etc/nginx/certs
+      - vhost:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+    networks:
+      - odoo-network
+    restart: unless-stopped
+  
+  # LetsEncrypt
+  letsencrypt:
+    image: jrcs/letsencrypt-nginx-proxy-companion
+    container_name: letsencrypt
+    depends_on:
+      - nginx-proxy
+    volumes:
+      - certs:/etc/nginx/certs
+      - vhost:/etc/nginx/vhost.d
+      - html:/usr/share/nginx/html
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - odoo-network
+    environment:
+      - DEFAULT_EMAIL=tucorreo@example.com
+    restart: unless-stopped
 
 volumes:
   postgres_data:
     driver: local
   odoo_data:
     driver: local
+  certs:
+  vhost:
+  html:
 
 networks:
   odoo-network:
