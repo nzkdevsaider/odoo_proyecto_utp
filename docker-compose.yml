@@ -1,3 +1,5 @@
+version: '3.8'
+
 services:
   # PostgreSQL
   postgresql:
@@ -33,13 +35,10 @@ services:
       - USER=odoo
       - PASSWORD=odoo
       - DEFAULT_LANG=es_PA
-      - LETSENCRYPT_HOST=odoo.saider.dev  
-      - LETSENCRYPT_EMAIL=sebasmoraresu@gmail.com
-      - ODOO_URI=/odoo
+      - ODOO_URI=/
       - VIRTUAL_HOST=odoo.saider.dev
       - VIRTUAL_PORT=8069
       - VIRTUAL_PROTO=http
-      - VIRTUAL_PATH=/odoo
     volumes:
       - odoo_data:/var/lib/odoo
       - ./odoo/addons:/mnt/extra-addons
@@ -47,14 +46,14 @@ services:
     networks:
       - odoo-network
     expose:
-      - "8069"           # Expone el puerto solo en la red interna
+      - "8069"          # Expone el puerto solo en la red interna
     restart: unless-stopped
     deploy:
       resources:
         limits:
           cpus: "1.0"
           memory: 4G
-  
+
   # NGINX
   nginx-proxy:
     image: jwilder/nginx-proxy
@@ -75,6 +74,7 @@ services:
       - SSL_POLICY=Mozilla-Intermediate
       - FORCE_SSL=true
       - DEFAULT_HOST=odoo.saider.dev
+      - VIRTUAL_HOST=odoo.saider.dev
       - VIRTUAL_PATH=/
       - VIRTUAL_PROTO=http
       - PROXY_REVERSE_HOST=on
@@ -84,7 +84,9 @@ services:
       - PROXY_SET_HEADER X-Real-IP $remote_addr
       - PROXY_SET_HEADER X-Forwarded-Proto $scheme
       - PROXY_SET_HEADER X-Forwarded-For $proxy_add_x_forwarded_for
-  
+      - LETSENCRYPT_HOST=odoo.saider.dev
+      - LETSENCRYPT_EMAIL=sebasmoraresu@gmail.com
+
   # LetsEncrypt
   letsencrypt:
     image: jrcs/letsencrypt-nginx-proxy-companion
